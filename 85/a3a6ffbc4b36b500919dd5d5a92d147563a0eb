@@ -1,0 +1,26 @@
+docs/安装配置与启动.md
+  s_2ab7fd7f702e68::t_5caf232586dd05 199
+backend/static/panel.js
+  s_2ab7fd7f702e68::t_5caf232586dd05 85-96,214-215,218-219,221-222,239
+  s_2ab7fd7f702e68::t_daacee40f83e0d 223-225,240,252
+docs/架构说明.md
+  s_2ab7fd7f702e68::t_5caf232586dd05 130
+tests/test_web.py
+  s_2ab7fd7f702e68::t_5caf232586dd05 103-107
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "85a3a6ffbc4b36b500919dd5d5a92d147563a0eb",
+  "prompts": {},
+  "sessions": {
+    "s_2ab7fd7f702e68": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a185cc-fa4d-7783-b3d8-03b990892b8f",
+        "model": "gpt-5.6-terra"
+      },
+      "human_author": "qieguo <15967139634@163.com>"
+    }
+  }
+}
