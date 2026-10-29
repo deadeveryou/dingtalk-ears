@@ -114,6 +114,29 @@ class WebTests(unittest.TestCase):
                 self.assertEqual(response.status, 202)
                 response.read()
                 connection.close()
+
+                # 验证 localhost 访问及 Origin 请求兼容性
+                local_conn = http.client.HTTPConnection("127.0.0.1", port)
+                local_conn.request("GET", "/", headers={"Host": "localhost:" + str(port)})
+                local_resp = local_conn.getresponse()
+                self.assertEqual(local_resp.status, 200)
+                local_resp.read()
+
+                local_conn.request(
+                    "POST",
+                    "/api/overview",
+                    body="{}",
+                    headers={
+                        "Host": "localhost:" + str(port),
+                        "Origin": "http://localhost:" + str(port),
+                        "X-Panel-Token": token,
+                        "Content-Type": "application/json",
+                    },
+                )
+                local_post_resp = local_conn.getresponse()
+                self.assertEqual(local_post_resp.status, 202)
+                local_post_resp.read()
+                local_conn.close()
             finally:
                 server.shutdown()
                 server.server_close()

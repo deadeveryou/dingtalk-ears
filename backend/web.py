@@ -13,7 +13,6 @@ def start_panel(store, status, regenerate, port=None):
     port = store.config.port if port is None else port
     static = Path(__file__).with_name("static")
     token = secrets.token_urlsafe(32)
-    origin = "http://127.0.0.1:" + str(port)
     page = (static / "index.html").read_text(encoding="utf-8").replace("__TOKEN__", token)
 
     class Handler(BaseHTTPRequestHandler):
@@ -42,13 +41,18 @@ def start_panel(store, status, regenerate, port=None):
             self.wfile.write(body)
 
         def allowed(self, write=False):
-            if self.headers.get("Host") != "127.0.0.1:" + str(port):
+            allowed_hosts = {"127.0.0.1:" + str(port), "localhost:" + str(port)}
+            allowed_origins = {"http://127.0.0.1:" + str(port), "http://localhost:" + str(port)}
+            # 校验请求 Host 是否来自允许的本地回环地址
+            if self.headers.get("Host") not in allowed_hosts:
                 return False
             supplied = self.headers.get("Origin")
-            if supplied and supplied != origin:
+            # 存在 Origin 时校验是否在允许的本地源列表中
+            if supplied and supplied not in allowed_origins:
                 return False
+            # 写请求需来自允许的 Origin 且携带有效的面板令牌
             return not write or (
-                supplied == origin
+                supplied in allowed_origins
                 and secrets.compare_digest(self.headers.get("X-Panel-Token", ""), token)
             )
 
@@ -135,6 +139,5 @@ def start_panel(store, status, regenerate, port=None):
 
     server = ThreadingHTTPServer(("127.0.0.1", port), Handler)
     port = server.server_address[1]
-    origin = "http://127.0.0.1:" + str(port)
     threading.Thread(target=server.serve_forever, daemon=True).start()
     return server

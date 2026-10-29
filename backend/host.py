@@ -6,6 +6,7 @@ import os
 import queue
 import signal
 import subprocess
+import sys
 import threading
 import time
 
@@ -141,6 +142,21 @@ class Host:
         for message in store.history():
             self.panel.receive(message)
         server = start_panel(self.panel, lambda: self.status, self.controls.put)
+        actual_port = server.server_address[1]
+        url = f"http://127.0.0.1:{actual_port}/"
+        # 换行打印面板访问地址
+        print(
+            f"\n本地面板访问地址：\n{url}\nhttp://localhost:{actual_port}/\n",
+            flush=True,
+        )
+        # 前台交互式终端运行时主动唤起默认浏览器打开面板
+        if sys.stdout.isatty():
+            try:
+                import webbrowser
+
+                webbrowser.open(url)
+            except Exception:
+                pass
         try:
             self.agent = self.create_agent()
             self.status["appserver"] = "ready"
