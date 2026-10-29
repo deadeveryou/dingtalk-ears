@@ -99,6 +99,9 @@ def start_panel(store, status, regenerate, port=None):
                 elif self.path == "/api/ignore":
                     store.ignore(body["id"], body["version"])
                     regenerate("__overview__")
+                elif self.path == "/api/todo-ignore":
+                    store.ignore_task(body["id"])
+                    regenerate("__overview__")
                 elif self.path == "/api/handled":
                     store.archive_message(body["key"])
                     regenerate("__overview__")

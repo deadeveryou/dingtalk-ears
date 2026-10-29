@@ -143,8 +143,9 @@ async function manualTodo(message) {
 function renderTodos(active) {
   const root = document.getElementById('todo-list');
   root.replaceChildren();
+  // 排除已忽略的待办项
   const todos = active.flatMap((message) =>
-    (message.todos || []).map((task) => ({ task, message })),
+    (message.todos || []).filter((task) => task.status !== 'ignored').map((task) => ({ task, message })),
   );
   document.getElementById('todo-count').textContent = todos.filter(
     (item) => item.task.status === 'candidate',
@@ -162,6 +163,7 @@ function renderTodos(active) {
     if (task.status === 'candidate') {
       const actions = el('div', undefined, 'todo-action');
       actions.append(
+        button('忽略', () => action('todo-ignore', { id: task.id })),
         button('添加待办', () => openTodo({ id: task.id, title: task.title }), 'primary'),
       );
       item.append(actions);
