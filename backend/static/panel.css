@@ -154,18 +154,95 @@ header p {
   margin-top: 6px;
 }
 
+#listening.status-danger,
+#listening.status-normal {
+  display: flex;
+  align-items: center;
+}
+
+#listening.status-danger::before,
+#listening.status-normal::before {
+  content: '';
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  margin-right: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+#listening.status-danger {
+  color: #cf222e;
+}
+
+#listening.status-danger::before {
+  background-color: #cf222e;
+  box-shadow: 0 0 0 0 rgba(207, 34, 46, 0.7);
+  animation: pulse-red 2s infinite ease-in-out;
+}
+
+#listening.status-normal::before {
+  background-color: #2da44e;
+  box-shadow: 0 0 0 0 rgba(45, 164, 78, 0.7);
+  animation: pulse-green 2s infinite ease-in-out;
+}
+
+@keyframes pulse-red {
+  0% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(207, 34, 46, 0.7);
+  }
+  70% {
+    transform: scale(1);
+    box-shadow: 0 0 0 6px rgba(207, 34, 46, 0);
+  }
+  100% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(207, 34, 46, 0);
+  }
+}
+
+@keyframes pulse-green {
+  0% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(45, 164, 78, 0.7);
+  }
+  70% {
+    transform: scale(1);
+    box-shadow: 0 0 0 6px rgba(45, 164, 78, 0);
+  }
+  100% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(45, 164, 78, 0);
+  }
+}
+
 .stat span {
   color: #7b897e;
   font-size: 12px;
 }
 
 #error {
+  position: fixed;
+  top: 16px;
+  left: 265px;
+  width: calc(100vw - 310px);
+  max-width: 1030px;
+  z-index: 1000;
+  box-sizing: border-box;
   color: #904b34;
-  background: #fff0e4;
+  background: rgba(255, 240, 228, 0.96);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid #f6cfbc;
   border-radius: 9px;
-  padding: 12px;
-  margin-bottom: 20px;
+  padding: 12px 16px;
+  box-shadow: 0 4px 18px rgba(144, 75, 52, 0.18), 0 1px 3px rgba(0, 0, 0, 0.08);
   white-space: pre-wrap;
+}
+
+#error[hidden] {
+  display: none;
 }
 
 article {
@@ -306,6 +383,12 @@ textarea:disabled {
 }
 
 @media (width <=700px) {
+  #error {
+    top: 12px;
+    left: 16px;
+    width: calc(100vw - 32px);
+  }
+
   aside {
     position: static;
     width: 100%;

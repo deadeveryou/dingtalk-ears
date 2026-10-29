@@ -26,10 +26,24 @@ function el(tag, text, cls) {
   if (cls) node.className = cls;
   return node;
 }
+// 将网络底层异常转换为更准确的中文提示并保留原始报错
+function humanizeError(text) {
+  if (!text) return '';
+  const str = String(text);
+  // 判断是否为服务停止或网络中断导致的请求失败
+  if (
+    str.includes('Failed to fetch') ||
+    str.includes('Load failed') ||
+    str.includes('NetworkError')
+  ) {
+    return '无法连接本地服务，后台进程可能已停止（' + str + '）';
+  }
+  return str;
+}
 function error(text) {
   const box = document.getElementById('error');
   box.hidden = !text;
-  box.textContent = text || '';
+  box.textContent = humanizeError(text);
 }
 async function action(path, data) {
   const response = await fetch('/api/' + path, {
@@ -275,11 +289,18 @@ function render() {
   const ready = Object.values(status.listeners || {}).filter(
     (item) => item.state === 'ready',
   ).length;
-  document.getElementById('listening').textContent = degraded
-    ? '连接异常'
-    : ready === expected
-      ? '已订阅 ' + ready + ' 路'
-      : ready + '/' + expected + ' 已订阅';
+  const listeningEl = document.getElementById('listening');
+  // 连接异常时展示红色文字与红色呼吸灯，正常时展示绿色呼吸灯
+  if (degraded) {
+    listeningEl.textContent = '连接异常';
+    listeningEl.className = 'status-danger';
+  } else {
+    listeningEl.textContent =
+      ready === expected
+        ? '已订阅 ' + ready + ' 路'
+        : ready + '/' + expected + ' 已订阅';
+    listeningEl.className = 'status-normal';
+  }
   const counts = Object.fromEntries(
     Object.entries(status.listeners || {}).map(([key, value]) => [key, value.accepted || 0]),
   );
@@ -378,6 +399,12 @@ async function refresh() {
         '更新于 ' + (next.status.updated || '刚刚') + ' · 展示最近 100 条消息；仅确认后写入钉钉。';
   } catch (e) {
     error(e.message);
+    const listeningEl = document.getElementById('listening');
+    // 服务连接失败时同步将监听状态置为异常
+    if (listeningEl) {
+      listeningEl.textContent = '连接异常';
+      listeningEl.className = 'status-danger';
+    }
   } finally {
     loading = false;
   }
