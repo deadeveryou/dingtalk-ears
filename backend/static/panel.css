@@ -70,11 +70,32 @@ aside {
   padding: 34px 23px;
 }
 
+.brand-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 9px;
+}
+
 .brand {
   font-size: 22px;
   letter-spacing: -1px;
   font-weight: 700;
-  margin-bottom: 9px;
+}
+
+.github-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #556c5e;
+  border-radius: 6px;
+  padding: 4px;
+  transition: color 0.15s, background-color 0.15s;
+}
+
+.github-link:hover {
+  color: #1a2e23;
+  background: #dce7dc;
 }
 
 .hint {

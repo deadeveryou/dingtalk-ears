@@ -21,7 +21,9 @@ def start_panel(store, status, regenerate, port=None):
 
         def reply(self, code, data, content_type="application/json; charset=utf-8"):
             body = (
-                data.encode("utf-8")
+                data
+                if isinstance(data, (bytes, bytearray))
+                else data.encode("utf-8")
                 if isinstance(data, str)
                 else json.dumps(data, ensure_ascii=False).encode("utf-8")
             )
@@ -66,12 +68,18 @@ def start_panel(store, status, regenerate, port=None):
                     (static / "panel.js").read_text(encoding="utf-8").replace("__TOKEN__", token)
                 )
                 return self.reply(200, script, "text/javascript; charset=utf-8")
-            if self.path == "/panel.css":
+            clean_path = self.path.split("?")[0]
+            if clean_path == "/panel.css":
                 return self.reply(
                     200,
                     (static / "panel.css").read_text(encoding="utf-8"),
                     "text/css; charset=utf-8",
                 )
+            if clean_path == "/favicon.ico":
+                ico = static / "favicon.ico"
+                # 存在本地图标文件时返回钉钉图标
+                if ico.exists():
+                    return self.reply(200, ico.read_bytes(), "image/x-icon")
             if self.path == "/api/state":
                 return self.reply(
                     200,

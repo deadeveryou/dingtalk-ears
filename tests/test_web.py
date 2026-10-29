@@ -100,6 +100,12 @@ class WebTests(unittest.TestCase):
                     self.assertEqual(response.status, 200)
                     self.assertIn(kind, response.getheader("Content-Type"))
                     self.assertNotIn("__TOKEN__", response.read().decode())
+                # 验证钉钉 favicon 静态资源返回
+                connection.request("GET", "/favicon.ico")
+                response = connection.getresponse()
+                self.assertEqual(response.status, 200)
+                self.assertEqual("image/x-icon", response.getheader("Content-Type"))
+                self.assertTrue(len(response.read()) > 0)
                 connection.request(
                     "POST",
                     "/api/overview",
