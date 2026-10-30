@@ -1,0 +1,23 @@
+tests/test_ears.py
+  s_5dacd276c332cd::t_997367994ae95f 78
+  s_5dacd276c332cd::t_148015dd9dc2ee 79-92
+  s_5dacd276c332cd::t_87ba68c96e7f1c 93-94
+backend/events.py
+  s_5dacd276c332cd::t_997367994ae95f 14-15,50,61-62,74
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "cd5521e99e8a43b7764c893b57eb448c7fccb0a2",
+  "prompts": {},
+  "sessions": {
+    "s_5dacd276c332cd": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a18abd-5d3e-7742-ad16-77ffd951b8ab",
+        "model": "gpt-5.6-terra"
+      },
+      "human_author": "qieguo <15967139634@163.com>"
+    }
+  }
+}
