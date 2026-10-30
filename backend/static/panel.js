@@ -5,6 +5,7 @@ let filter = 'all',
   loading = false,
   last = '';
 const edits = new Map();
+const generatingMessages = new Map();
 const statuses = {
   pending: '待你审查',
   sending: '正在发送，请勿重复操作',
@@ -25,10 +26,24 @@ function el(tag, text, cls) {
   if (cls) node.className = cls;
   return node;
 }
+// 将网络底层异常转换为更准确的中文提示并保留原始报错
+function humanizeError(text) {
+  if (!text) return '';
+  const str = String(text);
+  // 判断是否为服务停止或网络中断导致的请求失败
+  if (
+    str.includes('Failed to fetch') ||
+    str.includes('Load failed') ||
+    str.includes('NetworkError')
+  ) {
+    return '无法连接本地服务，后台进程可能已停止（' + str + '）';
+  }
+  return str;
+}
 function error(text) {
   const box = document.getElementById('error');
   box.hidden = !text;
-  box.textContent = text || '';
+  box.textContent = humanizeError(text);
 }
 async function action(path, data) {
   const response = await fetch('/api/' + path, {
@@ -49,10 +64,65 @@ function button(label, fn, cls) {
     } catch (e) {
       error(e.message);
     } finally {
-      node.disabled = false;
+      // 避免覆写外部正在 loading 中的禁用状态
+      if (!node.classList.contains('loading')) {
+        node.disabled = false;
+      }
     }
   };
   return node;
+}
+// 触发重新生成草稿，并记录消息 key 用于 loading 与禁用交互
+async function regenerateMessage(message) {
+  if (generatingMessages.has(message.key)) return;
+  // 记录重新生成发起时的旧草稿 id 和时间戳
+  generatingMessages.set(message.key, {
+    draftId: message.draft ? message.draft.id : null,
+    startTime: Date.now(),
+  });
+  if (message.draft) {
+    edits.delete(message.draft.id);
+  }
+  render();
+  try {
+    await action('regenerate', { key: message.key });
+  } catch (e) {
+    generatingMessages.delete(message.key);
+    render();
+    throw e;
+  }
+}
+// 检查正在重新生成的消息是否已生成新草稿或异常结束
+function checkGeneratingStatus(next) {
+  if (!generatingMessages.size) return;
+  const now = Date.now();
+  // 检查是否发生全局 AI 服务错误或异常退出
+  const isGlobalError =
+    next.status.summary_state === 'paused_after_error' || Boolean(next.status.error);
+
+  for (const [key, info] of Array.from(generatingMessages.entries())) {
+    // 遇到全局错误或超过两分钟超时时解除生成中状态
+    if (isGlobalError || now - info.startTime > 120000) {
+      generatingMessages.delete(key);
+      continue;
+    }
+    const msg = next.messages.find((m) => m.key === key);
+    // 消息已被处理或不存在时清理状态
+    if (!msg || msg.handled) {
+      generatingMessages.delete(key);
+      continue;
+    }
+    // 原先无草稿且现在已生成草稿
+    if (!info.draftId && msg.draft) {
+      generatingMessages.delete(key);
+      continue;
+    }
+    // 原先有草稿且新草稿 id 已更新，代表重新生成已完成
+    if (info.draftId && msg.draft && msg.draft.id !== info.draftId) {
+      generatingMessages.delete(key);
+      continue;
+    }
+  }
 }
 function clean(text) {
   return text
@@ -73,8 +143,9 @@ async function manualTodo(message) {
 function renderTodos(active) {
   const root = document.getElementById('todo-list');
   root.replaceChildren();
+  // 排除已忽略的待办项
   const todos = active.flatMap((message) =>
-    (message.todos || []).map((task) => ({ task, message })),
+    (message.todos || []).filter((task) => task.status !== 'ignored').map((task) => ({ task, message })),
   );
   document.getElementById('todo-count').textContent = todos.filter(
     (item) => item.task.status === 'candidate',
@@ -92,6 +163,7 @@ function renderTodos(active) {
     if (task.status === 'candidate') {
       const actions = el('div', undefined, 'todo-action');
       actions.append(
+        button('忽略', () => action('todo-ignore', { id: task.id })),
         button('添加待办', () => openTodo({ id: task.id, title: task.title }), 'primary'),
       );
       item.append(actions);
@@ -124,22 +196,24 @@ function messageCard(message) {
     else card.append(el('div', '已处理', 'receipt'));
     return card;
   }
+  const isGenerating = generatingMessages.has(message.key);
   const actions = el('div', undefined, 'actions');
   if (draft) {
-    card.append(
-      el(
-        'div',
-        draft.status === 'pending' && !draft.text.trim()
-          ? '暂无回复建议，可手动填写'
-          : statuses[draft.status] || draft.status,
-        'label',
-      ),
-    );
+    const labelText = isGenerating
+      ? '正在重新生成回复建议...'
+      : draft.status === 'pending' && !draft.text.trim()
+        ? '暂无回复建议，可手动填写'
+        : statuses[draft.status] || draft.status;
+    card.append(el('div', labelText, 'label'));
     if (draft.status === 'pending') {
       const field = el('textarea');
       field.setAttribute('aria-label', '给' + message.sender + '的回复草稿');
       field.value = edits.has(draft.id) ? edits.get(draft.id) : draft.text;
-      field.placeholder = '写下你希望回复的内容';
+      field.placeholder = isGenerating ? '正在重新生成草稿，请稍候...' : '写下你希望回复的内容';
+      // 正在重新生成时禁用输入框
+      if (isGenerating) {
+        field.disabled = true;
+      }
       const send = button(
         '确认发送',
         async () => {
@@ -149,30 +223,57 @@ function messageCard(message) {
         },
         'primary',
       );
-      send.disabled = !field.value.trim();
+      send.disabled = isGenerating || !field.value.trim();
       field.oninput = () => {
         edits.set(draft.id, field.value);
-        send.disabled = !field.value.trim();
+        send.disabled = isGenerating || !field.value.trim();
       };
       card.append(field);
       actions.append(send);
     }
-    if (draft.status !== 'sending')
-      actions.append(button('重新生成', () => action('regenerate', { key: message.key })));
+    if (draft.status !== 'sending') {
+      // 重新生成中展示 loading 状态并禁用按钮以防止多次点击
+      if (isGenerating) {
+        const regen = button('重新生成中...', () => {}, 'loading');
+        regen.disabled = true;
+        actions.append(regen);
+      } else {
+        actions.append(button('重新生成', () => regenerateMessage(message)));
+      }
+    }
     if (draft.receipt)
       card.append(el('div', draft.receipt.error || '请在钉钉核对投递结果。', 'receipt'));
   } else {
-    card.append(el('div', '消息已收到，等待 AI 整理。图片和附件不会自动识别。', 'label'));
-    actions.append(
-      button('手动回复', () => action('manual', { key: message.key })),
-      button('生成草稿', () => action('regenerate', { key: message.key }), 'primary'),
+    card.append(
+      el(
+        'div',
+        isGenerating
+          ? '正在生成草稿，请稍候...'
+          : '消息已收到，等待 AI 整理。图片和附件不会自动识别。',
+        'label',
+      ),
     );
+    const manualBtn = button('手动回复', () => action('manual', { key: message.key }));
+    const genBtn = isGenerating
+      ? button('生成中...', () => {}, 'primary loading')
+      : button('生成草稿', () => regenerateMessage(message), 'primary');
+    // 正在生成草稿时禁用对应操作按钮
+    if (isGenerating) {
+      manualBtn.disabled = true;
+      genBtn.disabled = true;
+    }
+    actions.append(manualBtn, genBtn);
   }
-  if (!draft || draft.status !== 'sending')
-    actions.append(
-      button('添加待办', () => manualTodo(message)),
-      button('标记已处理', () => action('handled', { key: message.key })),
-    );
+  if (!draft || draft.status !== 'sending') {
+    const todoBtn = button('添加待办', () => manualTodo(message));
+    const handledBtn = button('标记已处理', () => action('handled', { key: message.key }));
+    // 正在重新生成时禁用待办与标记已处理按钮
+    if (isGenerating) {
+      todoBtn.disabled = true;
+      handledBtn.disabled = true;
+    }
+    actions.append(todoBtn, handledBtn);
+  }
   card.append(actions);
   return card;
 }
@@ -190,11 +291,18 @@ function render() {
   const ready = Object.values(status.listeners || {}).filter(
     (item) => item.state === 'ready',
   ).length;
-  document.getElementById('listening').textContent = degraded
-    ? '连接异常'
-    : ready === expected
-      ? '已订阅 ' + ready + ' 路'
-      : ready + '/' + expected + ' 已订阅';
+  const listeningEl = document.getElementById('listening');
+  // 连接异常时展示红色文字与红色呼吸灯，正常时展示绿色呼吸灯
+  if (degraded) {
+    listeningEl.textContent = '连接异常';
+    listeningEl.className = 'status-danger';
+  } else {
+    listeningEl.textContent =
+      ready === expected
+        ? '已订阅 ' + ready + ' 路'
+        : ready + '/' + expected + ' 已订阅';
+    listeningEl.className = 'status-normal';
+  }
   const counts = Object.fromEntries(
     Object.entries(status.listeners || {}).map(([key, value]) => [key, value.accepted || 0]),
   );
@@ -282,8 +390,12 @@ async function refresh() {
       next.status.appserver,
       next.status.listeners,
     ]);
+    const prevCount = generatingMessages.size;
+    checkGeneratingStatus(next);
+    const generatingChanged = prevCount !== generatingMessages.size;
     snapshot = next;
-    if (signature !== last) {
+    // 数据签名变动或重新生成状态完成时触发视图重绘
+    if (signature !== last || generatingChanged) {
       const active = document.activeElement;
       if (active && active.tagName === 'TEXTAREA') return;
       last = signature;
@@ -293,6 +405,12 @@ async function refresh() {
         '更新于 ' + (next.status.updated || '刚刚') + ' · 展示最近 100 条消息；仅确认后写入钉钉。';
   } catch (e) {
     error(e.message);
+    const listeningEl = document.getElementById('listening');
+    // 服务连接失败时同步将监听状态置为异常
+    if (listeningEl) {
+      listeningEl.textContent = '连接异常';
+      listeningEl.className = 'status-danger';
+    }
   } finally {
     loading = false;
   }
@@ -306,10 +424,14 @@ document.getElementById('tabs').onclick = (event) => {
   render();
 };
 document.getElementById('refresh-overview').onclick = async () => {
+  const btn = document.getElementById('refresh-overview');
+  btn.disabled = true;
   try {
     await action('overview', {});
   } catch (e) {
     error(e.message);
+  } finally {
+    btn.disabled = false;
   }
 };
 document.getElementById('todo-cancel').onclick = () => {

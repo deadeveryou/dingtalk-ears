@@ -277,6 +277,14 @@ class PanelStore:
                 (ident, version),
             )
 
+    # 忽略指定的候选待办项
+    def ignore_task(self, ident):
+        with self.connect() as db:
+            db.execute(
+                "UPDATE todos SET status='ignored' WHERE id=? AND status='candidate'",
+                (ident,),
+            )
+
     def snapshot(self):
         with self.connect() as db:
             messages = []

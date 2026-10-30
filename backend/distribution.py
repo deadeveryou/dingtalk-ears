@@ -32,7 +32,7 @@ def create_archive(root, output):
     root, output = Path(root).resolve(), Path(output).resolve()
     candidates = [root / name for name in sorted(ROOT_FILES) if (root / name).exists()]
     for directory, suffixes in [
-        ("backend", {".py", ".html", ".js", ".css", ".sql"}),
+        ("backend", {".py", ".html", ".js", ".css", ".sql", ".ico"}),
         ("tests", {".py"}),
         ("scripts", {".py"}),
     ]:

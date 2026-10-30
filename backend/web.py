@@ -13,7 +13,6 @@ def start_panel(store, status, regenerate, port=None):
     port = store.config.port if port is None else port
     static = Path(__file__).with_name("static")
     token = secrets.token_urlsafe(32)
-    origin = "http://127.0.0.1:" + str(port)
     page = (static / "index.html").read_text(encoding="utf-8").replace("__TOKEN__", token)
 
     class Handler(BaseHTTPRequestHandler):
@@ -22,7 +21,9 @@ def start_panel(store, status, regenerate, port=None):
 
         def reply(self, code, data, content_type="application/json; charset=utf-8"):
             body = (
-                data.encode("utf-8")
+                data
+                if isinstance(data, (bytes, bytearray))
+                else data.encode("utf-8")
                 if isinstance(data, str)
                 else json.dumps(data, ensure_ascii=False).encode("utf-8")
             )
@@ -42,13 +43,18 @@ def start_panel(store, status, regenerate, port=None):
             self.wfile.write(body)
 
         def allowed(self, write=False):
-            if self.headers.get("Host") != "127.0.0.1:" + str(port):
+            allowed_hosts = {"127.0.0.1:" + str(port), "localhost:" + str(port)}
+            allowed_origins = {"http://127.0.0.1:" + str(port), "http://localhost:" + str(port)}
+            # 校验请求 Host 是否来自允许的本地回环地址
+            if self.headers.get("Host") not in allowed_hosts:
                 return False
             supplied = self.headers.get("Origin")
-            if supplied and supplied != origin:
+            # 存在 Origin 时校验是否在允许的本地源列表中
+            if supplied and supplied not in allowed_origins:
                 return False
+            # 写请求需来自允许的 Origin 且携带有效的面板令牌
             return not write or (
-                supplied == origin
+                supplied in allowed_origins
                 and secrets.compare_digest(self.headers.get("X-Panel-Token", ""), token)
             )
 
@@ -62,12 +68,18 @@ def start_panel(store, status, regenerate, port=None):
                     (static / "panel.js").read_text(encoding="utf-8").replace("__TOKEN__", token)
                 )
                 return self.reply(200, script, "text/javascript; charset=utf-8")
-            if self.path == "/panel.css":
+            clean_path = self.path.split("?")[0]
+            if clean_path == "/panel.css":
                 return self.reply(
                     200,
                     (static / "panel.css").read_text(encoding="utf-8"),
                     "text/css; charset=utf-8",
                 )
+            if clean_path == "/favicon.ico":
+                ico = static / "favicon.ico"
+                # 存在本地图标文件时返回钉钉图标
+                if ico.exists():
+                    return self.reply(200, ico.read_bytes(), "image/x-icon")
             if self.path == "/api/state":
                 return self.reply(
                     200,
@@ -94,6 +106,9 @@ def start_panel(store, status, regenerate, port=None):
                     ).start()
                 elif self.path == "/api/ignore":
                     store.ignore(body["id"], body["version"])
+                    regenerate("__overview__")
+                elif self.path == "/api/todo-ignore":
+                    store.ignore_task(body["id"])
                     regenerate("__overview__")
                 elif self.path == "/api/handled":
                     store.archive_message(body["key"])
@@ -135,6 +150,5 @@ def start_panel(store, status, regenerate, port=None):
 
     server = ThreadingHTTPServer(("127.0.0.1", port), Handler)
     port = server.server_address[1]
-    origin = "http://127.0.0.1:" + str(port)
     threading.Thread(target=server.serve_forever, daemon=True).start()
     return server
