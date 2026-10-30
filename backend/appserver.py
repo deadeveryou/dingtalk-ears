@@ -205,6 +205,10 @@ class AppServer:
             pass
         raise RuntimeError("Codex 生成超时，原消息已保留，可手动重试")
 
+    def is_alive(self):
+        """检查底层子进程是否仍在正常运行"""
+        return self.process.poll() is None
+
     def close(self):
         if self.process.poll() is None:
             try:

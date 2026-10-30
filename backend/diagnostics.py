@@ -10,7 +10,9 @@ from dataclasses import replace
 
 def resolve_commands(config):
     found = {}
-    for name in ["dws", "codex"]:
+    # 根据当前配置的 ai_provider 动态检查所需命令
+    required = ["dws", config.ai_provider]
+    for name in required:
         command = getattr(config, name)
         executable = shutil.which(command)
         if not executable:
@@ -105,15 +107,26 @@ def doctor(config):
         record(
             "钉钉登录", False, "无法完成认证检查；在终端运行 dws auth status 核对，不输出认证原文"
         )
-    try:
-        result = run([config.codex, "login", "status"])
-        record(
-            "Codex 登录",
-            result.returncode == 0,
-            "已登录" if result.returncode == 0 else "运行 codex login",
-        )
-    except (OSError, subprocess.TimeoutExpired):
-        record("Codex 登录", False, "无法运行 codex login status")
+    if config.ai_provider == "agy":
+        try:
+            result = run([config.agy, "models"])
+            record(
+                "agy 登录",
+                result.returncode == 0,
+                "已连接可用模型" if result.returncode == 0 else "运行 agy 登录并检查网络",
+            )
+        except (OSError, subprocess.TimeoutExpired):
+            record("agy 登录", False, "无法运行 agy 命令")
+    else:
+        try:
+            result = run([config.codex, "login", "status"])
+            record(
+                "Codex 登录",
+                result.returncode == 0,
+                "已登录" if result.returncode == 0 else "运行 codex login",
+            )
+        except (OSError, subprocess.TimeoutExpired):
+            record("Codex 登录", False, "无法运行 codex login status")
     for name, directory in [("状态目录", config.state_dir), ("输出目录", config.output_dir)]:
         ancestor = directory
         while not ancestor.exists():

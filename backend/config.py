@@ -12,7 +12,9 @@ EXAMPLE = {
     "group": {"id": "填写群openConversationId", "name": "关注群"},
     "server": {"port": 8766},
     "paths": {"state_dir": "./data", "output_dir": "./data/output"},
-    "commands": {"dws": "dws", "codex": "codex"},
+    "commands": {"dws": "dws", "codex": "codex", "agy": "agy"},
+    "ai_provider": "codex",
+    "ai_model": "gemini-3.8-flash-medium",
     "batch": {"direct_seconds": 30, "group_seconds": 300, "trigger_count": 20, "max_messages": 50},
 }
 
@@ -29,6 +31,9 @@ class Settings:
     port: int = 8766
     dws: str = "dws"
     codex: str = "codex"
+    agy: str = "agy"
+    ai_provider: str = "codex"
+    ai_model: str = "gemini-3.8-flash-medium"
     direct_seconds: int = 30
     group_seconds: int = 300
     trigger_count: int = 20
@@ -90,12 +95,17 @@ def load_config(path):
     if batch["trigger_count"] > batch["max_messages"] or batch["max_messages"] > 500:
         raise ValueError("trigger_count 不能大于 max_messages，max_messages 不能超过 500")
 
+    ai_provider = _text(value.get("ai_provider", "codex"), "ai_provider").lower()
+    if ai_provider not in ["codex", "agy"]:
+        raise ValueError("ai_provider 必须是 codex 或 agy")
+    ai_model = _text(value.get("ai_model", "gemini-3.8-flash-medium"), "ai_model")
+
     def config_path(key):
         raw = _text(sections["paths"].get(key, EXAMPLE["paths"][key]), "paths." + key)
         return (path.parent / Path(raw).expanduser()).resolve()
 
-    def command_path(key):
-        raw = _text(sections["commands"].get(key, key), "commands." + key)
+    def command_path(key, default=None):
+        raw = _text(sections["commands"].get(key, default or key), "commands." + key)
         if "/" in raw or raw.startswith("~"):
             return str((path.parent / Path(raw).expanduser()).resolve())
         return raw
@@ -111,6 +121,9 @@ def load_config(path):
         output_dir=config_path("output_dir"),
         dws=command_path("dws"),
         codex=command_path("codex"),
+        agy=command_path("agy", "agy"),
+        ai_provider=ai_provider,
+        ai_model=ai_model,
         **batch,
     )
 

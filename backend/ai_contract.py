@@ -35,9 +35,9 @@ def validate_result(text):
         or type(result.get("needs_reply")) is not bool
         or not isinstance(result.get("draft"), str)
     ):
-        raise ValueError("Codex 未返回有效的摘要和草稿")
+        raise ValueError("AI 未返回有效的摘要和草稿")
     if len(result["draft"]) > 10000:
-        raise ValueError("Codex 草稿过长，请手动审查")
+        raise ValueError("AI 草稿过长，请手动审查")
     todos = result.setdefault("todos", [])
     if not isinstance(todos, list) or len(todos) > 10:
         raise ValueError("待办候选格式不正确")

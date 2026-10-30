@@ -67,10 +67,30 @@ class ConfigTests(unittest.TestCase):
             self.module.load_config(self.path)
 
     def test_command_paths_follow_config_but_bare_commands_use_path(self):
-        self.value["commands"] = {"dws": "./bin/dws", "codex": "codex"}
+        self.value["commands"] = {"dws": "./bin/dws", "codex": "codex", "agy": "./bin/agy"}
         config = self.load()
         self.assertEqual(config.dws, str(self.root / "bin/dws"))
         self.assertEqual(config.codex, "codex")
+        self.assertEqual(config.agy, str(self.root / "bin/agy"))
+
+    def test_ai_provider_and_model_configuration(self):
+        # 默认 provider 和 model
+        config = self.load()
+        self.assertEqual(config.ai_provider, "codex")
+        self.assertEqual(config.ai_model, "gemini-3.8-flash-medium")
+
+        # 配置为 agy
+        self.value["ai_provider"] = "agy"
+        self.value["ai_model"] = "gemini-3.8-flash-medium"
+        config_agy = self.load()
+        self.assertEqual(config_agy.ai_provider, "agy")
+        self.assertEqual(config_agy.ai_model, "gemini-3.8-flash-medium")
+
+        # 非法 provider 抛出异常
+        self.value["ai_provider"] = "unsupported"
+        with self.assertRaises(ValueError):
+            self.load()
+        self.value["ai_provider"] = "codex"
 
     def test_state_cannot_be_reused_by_another_account(self):
         first = self.load()

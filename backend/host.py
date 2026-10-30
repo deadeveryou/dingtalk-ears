@@ -35,6 +35,7 @@ class Host:
             "listeners": {},
             "summary_state": "waiting",
             "appserver": "starting",
+            "ai_provider": config.ai_provider,
             "panel_url": config.panel_url,
             "group_name": config.group_name,
             "listener_count": 3,
@@ -46,6 +47,17 @@ class Host:
         self.paused = False
 
     def create_agent(self):
+        # 根据配置的 ai_provider 选用对应的生成器
+        if self.config.ai_provider == "agy":
+            from .agy_client import AgyClient
+
+            return AgyClient(
+                self.config.state_dir / "agent",
+                executable=self.config.agy,
+                display_name=self.config.display_name,
+                group_name=self.config.group_name,
+                model=self.config.ai_model,
+            )
         return AppServer(
             self.config.state_dir / "agent",
             executable=self.config.codex,
@@ -55,7 +67,7 @@ class Host:
 
     def generate(self, batch):
         try:
-            if self.agent is None or self.agent.process.poll() is not None:
+            if self.agent is None or not self.agent.is_alive():
                 if self.agent:
                     self.agent.close()
                 self.agent = self.create_agent()

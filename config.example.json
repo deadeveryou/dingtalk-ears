@@ -15,8 +15,11 @@
   },
   "commands": {
     "dws": "dws",
-    "codex": "codex"
+    "codex": "codex",
+    "agy": "agy"
   },
+  "ai_provider": "agy",
+  "ai_model": "gemini-3.8-flash-medium",
   "batch": {
     "direct_seconds": 30,
     "group_seconds": 300,

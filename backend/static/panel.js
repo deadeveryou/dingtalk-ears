@@ -208,6 +208,10 @@ function render() {
     ' ' +
     (counts.ued || 0) +
     ' 条。历史补读不计入实时接收；订阅就绪不代表已验证群事件投递。';
+  const agentLabel = document.getElementById('agent-label');
+  if (agentLabel) {
+    agentLabel.textContent = status.ai_provider || 'AI 助手';
+  }
   document.getElementById('agent').textContent =
     status.summary_state === 'generating'
       ? '生成中'
