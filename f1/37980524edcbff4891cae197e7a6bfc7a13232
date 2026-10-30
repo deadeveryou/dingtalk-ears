@@ -1,0 +1,99 @@
+backend/diagnostics.py
+  s_5dacd276c332cd::t_b3d55f3dada20f 139
+backend/listeners.py
+  s_5dacd276c332cd::t_c8509eb97bcfac 65-70
+backend/dingtalk.py
+  s_5dacd276c332cd::t_b1c07fb086e17a 7-23
+README.md
+  h_0ab1bb599c3217 25
+  s_310c7ac686f6d5::t_b19612e602e00e 3,16
+  s_310c7ac686f6d5::t_adb0dc84d30a68 26
+tests/test_diagnostics.py
+  s_310c7ac686f6d5::t_481e3b15d0f6f3 41,79
+tests/test_ears.py
+  s_5dacd276c332cd::t_84b00b2ea6366b 18
+  s_5dacd276c332cd::t_d55b0e653d2119 67-75
+tests/test_distribution.py
+  s_310c7ac686f6d5::t_481e3b15d0f6f3 61
+backend/host.py
+  s_5dacd276c332cd::t_b1c07fb086e17a 15,165
+  s_5dacd276c332cd::t_c8509eb97bcfac 14,43-44,68,158-164,166,196,199-204
+backend/static/panel.css
+  s_310c7ac686f6d5::t_472b2281f8026d 613-622,640-646,648,651,654-658,698-723,725-734
+  s_310c7ac686f6d5::t_08353f67beb3e0 611-612,623-627,634-639,649-650,659-663,665-666,668,670-672,676-679,685-692,695-697,735-736
+  s_5dacd276c332cd::t_3db6a49180ca7b 246-264
+  s_310c7ac686f6d5::t_d9697b2a324adf 628-633,647,652-653,664,669,673-675,680-684,693-694,724
+  h_0ab1bb599c3217 667
+  s_310c7ac686f6d5::t_ec74aeaecfa4f3 582
+backend/config.py
+  s_5dacd276c332cd::t_c8509eb97bcfac 5-7,15,31,44,51-52,54-55,60-62,98-101,103-112,150,165-171,174-192,212-237
+  s_5dacd276c332cd::t_7e992521b118b3 257,260-261
+  s_5dacd276c332cd::t_f332a554489229 238-239
+  s_5dacd276c332cd::t_28ba7b96af557b 17,45,152
+  s_5dacd276c332cd::t_aee65a5d35ca70 193-211
+  s_5dacd276c332cd::t_03e43efdf4967c 53,56-59,97,102,119,151,172-173,254,258
+tests/test_config.py
+  s_5dacd276c332cd::t_b7b580caabb504 102
+  s_310c7ac686f6d5::t_106b4a43e2ec6a 103
+  s_5dacd276c332cd::t_1b9b1c54c6595b 98
+  s_5dacd276c332cd::t_2f0819c5817b6b 100
+  s_5dacd276c332cd::t_d55b0e653d2119 95-97,99,101,105
+  s_5dacd276c332cd::t_84b00b2ea6366b 25,53,104
+backend/static/index.html
+  s_310c7ac686f6d5::t_472b2281f8026d 94
+  s_5dacd276c332cd::t_bcd4c857eb2ecc 108-109
+  s_5dacd276c332cd::t_3db6a49180ca7b 33,51-55,89-91,106-107
+  s_310c7ac686f6d5::t_08353f67beb3e0 92-93,95-101,103-105
+  s_310c7ac686f6d5::t_b19612e602e00e 102
+docs/安装配置与启动.md
+  s_310c7ac686f6d5::t_a0f656e5d6ab7a 133
+  s_310c7ac686f6d5::t_b19612e602e00e 93-98,119,130-132
+backend/events.py
+  s_5dacd276c332cd::t_03e43efdf4967c 13-14
+  s_5dacd276c332cd::t_c8509eb97bcfac 15-16,39
+tests/test_web.py
+  s_5dacd276c332cd::t_d931cbde28c12b 18-47
+backend/cli.py
+  s_5dacd276c332cd::t_3d506862df6ca9 48
+  s_5dacd276c332cd::t_aee65a5d35ca70 10
+backend/web.py
+  s_5dacd276c332cd::t_b1c07fb086e17a 12,93-94
+  s_5dacd276c332cd::t_3db6a49180ca7b 90,148-155
+backend/static/panel.js
+  s_310c7ac686f6d5::t_472b2281f8026d 463-464,474-477,484,492-499,502-514,516,528
+  s_310c7ac686f6d5::t_d69bf671334cfd 500-501,529-532
+  s_5dacd276c332cd::t_3db6a49180ca7b 132-146,148-152,203,310,335,371,375,411,461-462,466-467,469-473,478-481
+  s_310c7ac686f6d5::t_0de070e89b86aa 552
+  s_5dacd276c332cd::t_03e43efdf4967c 147
+  s_5dacd276c332cd::t_b1c07fb086e17a 468,483,519,534,538-544,546-547
+  s_310c7ac686f6d5::t_08353f67beb3e0 465,482,485-491,515,517-518,520-527,533,535-537,545,548-551,553-558
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "f137980524edcbff4891cae197e7a6bfc7a13232",
+  "prompts": {},
+  "humans": {
+    "h_0ab1bb599c3217": {
+      "author": "qieguo <15967139634@163.com>"
+    }
+  },
+  "sessions": {
+    "s_310c7ac686f6d5": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a18bb9-4bf7-77f2-b75e-78533a193542",
+        "model": "gpt-5.6-terra"
+      },
+      "human_author": "qieguo <15967139634@163.com>"
+    },
+    "s_5dacd276c332cd": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a18abd-5d3e-7742-ad16-77ffd951b8ab",
+        "model": "gpt-5.6-terra"
+      },
+      "human_author": "qieguo <15967139634@163.com>"
+    }
+  }
+}
