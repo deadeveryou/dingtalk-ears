@@ -1,0 +1,22 @@
+.gitignore
+  h_0ab1bb599c3217 7,27-33
+backend/distribution.py
+  h_0ab1bb599c3217 30-49,100-101,114-116
+config.example.json
+  h_0ab1bb599c3217 12-14
+docs/架构说明.md
+  h_0ab1bb599c3217 124,130
+tests/test_distribution.py
+  h_0ab1bb599c3217 82-101
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "92b49e3675b6a0ed5925264cbc520bed9635c398",
+  "prompts": {},
+  "humans": {
+    "h_0ab1bb599c3217": {
+      "author": "qieguo <15967139634@163.com>"
+    }
+  }
+}
