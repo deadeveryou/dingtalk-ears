@@ -1,0 +1,46 @@
+README.md
+  h_0ab1bb599c3217 49
+backend/config.py
+  h_0ab1bb599c3217 171,216-218,230-232,262-264
+backend/dingtalk.py
+  h_0ab1bb599c3217 9-22
+backend/events.py
+  h_0ab1bb599c3217 6-7,14-15,60-62,70,74,81-84
+backend/host.py
+  h_0ab1bb599c3217 17,46-47,158-164,168,173,203-204,242
+backend/media.py
+  h_0ab1bb599c3217 1-163
+backend/panel_store.py
+  h_0ab1bb599c3217 72-106
+backend/queue_store.py
+  h_0ab1bb599c3217 44-48
+backend/static/index.html
+  h_0ab1bb599c3217 45-47,54-57,112-115
+backend/static/panel.css
+  h_0ab1bb599c3217 51,93-95,203,209,216,218,221,223,226,233,235,238,240,243,268-277,288,293-295,349-368,657-659,712-715
+backend/static/panel.js
+  h_0ab1bb599c3217 129-144,161-166,186-188,218,221-225,288,337,349-351,391-394,489-490,543-545,568-570,575-578
+backend/web.py
+  h_0ab1bb599c3217 8,11,14-24,29,39-43,110-119
+docs/安装配置与启动.md
+  h_0ab1bb599c3217 200-202
+tests/test_ears.py
+  h_0ab1bb599c3217 67-107
+tests/test_media.py
+  h_0ab1bb599c3217 1-63
+tests/test_panel.py
+  h_0ab1bb599c3217 150-159
+tests/test_web.py
+  h_0ab1bb599c3217 12,31-37,42-52,54-56,196-235
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "4ac86cf70dc518bb43ade4033b091eee2db7e3bd",
+  "prompts": {},
+  "humans": {
+    "h_0ab1bb599c3217": {
+      "author": "qieguo <15967139634@163.com>"
+    }
+  }
+}
